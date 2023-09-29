@@ -22,10 +22,10 @@ private readonly IAuthenticationService _authenticationService;
         var result = _authenticationService.Register(request.FirstName, request.LastName, request.Email, request.Password);
 
         var registerResult = new AuthenticationResponse(
-            result.Id,
-            result.FirstName,
-            result.LastName,
-            result.Email,
+            result.User.Id,
+            result.User.FirstName,
+            result.User.LastName,
+            result.User.Email,
             result.Token
         );
 
@@ -38,10 +38,10 @@ private readonly IAuthenticationService _authenticationService;
         var result = _authenticationService.Login(request.Email, request.Password);
         
         var loginResult = new AuthenticationResponse(
-            result.Id,
-            result.FirstName,
-            result.LastName,
-            result.Email,
+            result.User.Id,
+            result.User.FirstName,
+            result.User.LastName,
+            result.User.Email,
             result.Token
         );
 
