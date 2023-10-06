@@ -1,10 +1,11 @@
 using System.Diagnostics;
+using ErrorOr;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Options;
 
-namespace BuberDinner.API;
+namespace BuberDinner.API.Common.Errors;
 
 public class BuberDinnerProblemDetailsFactory : ProblemDetailsFactory
 {
@@ -16,16 +17,17 @@ public class BuberDinnerProblemDetailsFactory : ProblemDetailsFactory
     }
 
     public override ProblemDetails CreateProblemDetails(
-            HttpContext httpContext, 
-            int? statusCode = null, 
-            string? title = null, 
-            string? type = null, 
-            string? detail = null, 
+            HttpContext httpContext,
+            int? statusCode = null,
+            string? title = null,
+            string? type = null,
+            string? detail = null,
             string? instance = null)
     {
         statusCode ??= 500;
 
-        var problemDetails = new ProblemDetails 
+        var problemDetails = new ProblemDetails
+
         {
             Status = statusCode,
             Title = title,
@@ -40,12 +42,12 @@ public class BuberDinnerProblemDetailsFactory : ProblemDetailsFactory
     }
 
     public override ValidationProblemDetails CreateValidationProblemDetails(
-            HttpContext httpContext, 
-            ModelStateDictionary modelStateDictionary, 
-            int? statusCode = null, 
-            string? title = null, 
-            string? type = null, 
-            string? detail = null, 
+            HttpContext httpContext,
+            ModelStateDictionary modelStateDictionary,
+            int? statusCode = null,
+            string? title = null,
+            string? type = null,
+            string? detail = null,
             string? instance = null)
     {
         throw new NotImplementedException();
@@ -54,16 +56,20 @@ public class BuberDinnerProblemDetailsFactory : ProblemDetailsFactory
     private void ApplyProblemDetailsDefaults(HttpContext httpContext, ProblemDetails problemDetails, int statusCode)
     {
         problemDetails.Status ??= statusCode;
-        if(_options.ClientErrorMapping.TryGetValue(statusCode, out var clientErrorData))
+        if (_options.ClientErrorMapping.TryGetValue(statusCode, out var clientErrorData))
         {
             problemDetails.Title ??= clientErrorData.Title;
             problemDetails.Type ??= clientErrorData.Link;
         }
 
         var traceId = Activity.Current?.Id ?? httpContext?.TraceIdentifier;
-        if(traceId != null) 
+        if (traceId != null)
+
             problemDetails.Extensions["traceId"] = traceId;
 
-            problemDetails.Extensions.Add("customProperty", "customValue");
+        var errors = httpContext?.Items[HttpContextItemKeys.Errors] as List<Error>;
+        
+        if(errors is not null)
+            problemDetails.Extensions.Add("errorCodes", errors.Select(x => x.Code));
     }
 }

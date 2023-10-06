@@ -1,4 +1,4 @@
-using BuberDinner.API;
+using BuberDinner.API.Common.Errors;
 using BuberDinner.API.Filters;
 using BuberDinner.Application;
 using BuberDinner.Infrastructure;
